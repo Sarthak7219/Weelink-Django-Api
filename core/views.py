@@ -15,16 +15,22 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
 
         try: 
+            username = request.data['username']
+            password = request.data.get('password')
+            try:
+                user = UserProfile.objects.get(username=username)
+            except UserProfile.DoesNotExist:
+                return Response({'error':'User does not exist'})
+            
+            if not user.check_password(password):
+                return Response({'error': 'Invalid credentials'})
+            
             response = super().post(request, *args, **kwargs)
             tokens = response.data
 
             access_token = tokens['access']
             refresh_token = tokens['refresh']
-            username = request.data['username']
-            try:
-                user = UserProfile.objects.get(username=username)
-            except UserProfile.DoesNotExist:
-                return Response({'error':'User does not exist'})
+            
 
             res = Response()
             res.data = {"success": True, 
@@ -55,8 +61,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             )
             return res
         except Exception as e:
-            print(e)
-            return Response({"error": True})
+            return Response({"error": str(e)})
 
 
 class CustomTokenRefreshView(TokenRefreshView):
