@@ -50,7 +50,7 @@ class Comment(models.Model):
         ordering = ['-created_on']
 
     def __str__(self):
-        return f'{self.author.username} : {self.comment[:30]}'
+        return f'{self.author.username} : {self.body[:30]}'
 
 
 
