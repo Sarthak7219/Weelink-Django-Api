@@ -101,12 +101,14 @@ def authenticated(request):
 
 @api_view(['POST'])
 def register(request):
-    if UserProfile.objects.filter(username = request.data['username']).exists():
-        return Response({"error": "Username already in use. Please try a different one"})
+    # if UserProfile.objects.filter(username = request.data['username']).exists():
+    #     return Response({"error": "Username already in use. Please try a different one"})
+    # else:
     serializer = UserRegisterSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
+    print(serializer.errors)
     return Response(serializer.errors)
 
 
