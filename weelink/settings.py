@@ -21,7 +21,7 @@ DEBUG = os.environ.get('DEBUG')
 # DEBUG = False
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ["https://weelink.onrender.com","http://localhost:5173", "https://weelink-social-media-website.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["https://weelink.onrender.com","http://localhost:5173", "https://weelink-social-media-website.onrender.com", "https://weelink-django-api.onrender.com"]
 
 
 
