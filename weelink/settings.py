@@ -21,7 +21,7 @@ DEBUG = os.environ.get('DEBUG')
 # DEBUG = False
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ["https://weelink.onrender.com","http://localhost:5173"]
+CSRF_TRUSTED_ORIGINS = ["https://weelink.onrender.com","http://localhost:5173", "https://weelink-social-media-website.onrender.com"]
 
 
 
@@ -61,6 +61,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "https://weelink-social-media-website.onrender.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
