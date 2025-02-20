@@ -11,7 +11,7 @@ https://github.com/Sarthak7219/Weelink-Social-Media-Website
 ## Demo Video:
 https://github.com/user-attachments/assets/ee23b9e8-c902-4c81-9726-490115adedcd
 
-Steps to setup :
+## Steps to setup :
 
 Make a virtual environment and activate it.
 In the same folder containing ur environment, follow the below steps:
