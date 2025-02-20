@@ -91,11 +91,13 @@ class CustomTokenRefreshView(TokenRefreshView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def authenticated(request):
-    return Response({"User is authenticated!"})
+    return Response({"success": True})
 
 
 @api_view(['POST'])
 def register(request):
+    if UserProfile.objects.filter(username = request.data['username']).exists():
+        return Response({"error": "Username already in use. Please try a different one"})
     serializer = UserRegisterSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
