@@ -2,8 +2,14 @@
 
 This repos is contains the code for the django backend api created using django rest framework for the website.
 
-Frontend Repo - https://github.com/Sarthak7219/Weelink-Social-Media-Website
-Demo Video - https://drive.google.com/file/d/194aNJ3apOqAejZep_l-xXnNWNJ55Uc68/view?usp=sharing
+## Live link:
+https://weelink-social-media-website.onrender.com
+
+## Frontend Repo:
+https://github.com/Sarthak7219/Weelink-Social-Media-Website
+
+## Demo Video:
+https://github.com/user-attachments/assets/ee23b9e8-c902-4c81-9726-490115adedcd
 
 Steps to setup :
 
