@@ -1,6 +1,6 @@
-LINK : https://weelink.onrender.com/
-Here is my submission for aries open projects - WebDev
-Category - Social Media Website
+## Weelink - Social Media Website 
+
+This repos is contains the code for the django backend api created using django rest framework for the website.
 
 Steps to setup :
 
@@ -12,4 +12,4 @@ In the same folder containing ur environment, follow the below steps:
 3) pip install -r requirements.txt
 4) python manage.py runserver
 
-Congrats!! WeeLink is live now
+Congrats!! API is live now
