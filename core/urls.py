@@ -1,7 +1,6 @@
 from django.urls import path
 from .views import get_user_profile_data, CustomTokenObtainPairView, CustomTokenRefreshView, register, authenticated, toggle_follow, get_user_posts, toggle_like, create_post, get_posts, search_users, update_user_details, logout, delete_post, get_friends, post_comment
-from django.conf import settings
-from django.conf.urls.static import static
+
 
 
 urlpatterns = [
@@ -24,7 +23,3 @@ urlpatterns = [
 
 ]
 
-# Serve static files during development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
