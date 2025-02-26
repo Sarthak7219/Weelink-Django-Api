@@ -4,7 +4,8 @@ from django.contrib.auth.models import AbstractUser
 
 # Custom User model
 class UserProfile(AbstractUser):
-    username = models.CharField(max_length=50, unique=True, primary_key=True)  #New primary key
+    id = models.AutoField(primary_key=True)
+    username = models.CharField(max_length=50, unique=True)  #New primary key
     bio = models.TextField(null=True, blank=True, max_length=150)
     profile_image = models.ImageField(blank=True, null=True, upload_to="images/profile/")
     followers = models.ManyToManyField(
@@ -13,6 +14,7 @@ class UserProfile(AbstractUser):
         symmetrical=False,
         blank=True
     )
+    email = models.EmailField(unique=True, null=True, blank=True)
     
     def get_profile_pic_url(self):
         if self.image:
@@ -21,8 +23,8 @@ class UserProfile(AbstractUser):
             return "/static/images/user/default_profile.jpeg"
 
 
-    def __str__(self):
-        return self.username
+    # def __str__(self):
+    #     return self.username
 
 
 class Post(models.Model):
@@ -54,4 +56,4 @@ class Comment(models.Model):
 
 
 
-    
+        

@@ -35,7 +35,7 @@ class DisplayThreadsSerializer(serializers.ModelSerializer):
     def get_other_user_img(self, obj):
         request_user = self.context["request"].user
         other_user = obj.get_other_user(request_user)
-        return other_user.profile_img.url if hasattr(other_user, "profile_img") else None
+        return other_user.profile_image.url if hasattr(other_user, "profile_image") else None
 
     def get_most_recent_message(self, obj):
         last_message = obj.chat_messages.order_by("-timestamp").first()

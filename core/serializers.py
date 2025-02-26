@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import UserProfile, Post, Comment
+from django.conf import settings
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -41,12 +42,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
 
     formatted_comment_date = serializers.SerializerMethodField()
+    author_name = serializers.SerializerMethodField()
     class Meta:
         model = Comment
-        fields = ['body', 'author', 'formatted_comment_date']
+        fields = ['body', 'author_name', 'formatted_comment_date']
 
     def get_formatted_comment_date(self, obj):
         return obj.created_on.strftime("%d %b %y")
+    
+    def get_author_name(self, obj):
+        return obj.author.username
 
 class PostSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()

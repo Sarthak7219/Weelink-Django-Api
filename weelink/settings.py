@@ -21,7 +21,7 @@ DEBUG = True
 # DEBUG = False
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ["https://weelink.onrender.com","http://localhost:5173", "https://weelink-social-media-website.onrender.com", "https://weelink-django-api.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "https://weelink-social-media-website.onrender.com", "https://weelink-django-api.onrender.com"]
 
 
 
@@ -67,7 +67,6 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 AUTH_USER_MODEL = 'core.UserProfile'  # --> Setting the custom user model to default
-
 SIMPLE_JWT = {
     "USER_ID_FIELD": "username"
 }
@@ -78,8 +77,10 @@ REST_FRAMEWORK = {
     )
 }
 
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
 
-
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
 ROOT_URLCONF = 'weelink.urls'
 
 TEMPLATES = [

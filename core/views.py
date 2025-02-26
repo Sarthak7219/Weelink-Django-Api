@@ -2,20 +2,29 @@ from rest_framework.decorators import api_view, permission_classes, parser_class
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import UserProfile, Post, Comment
+from django.conf import settings
 from .serializers import UserProfileSerializer, UserRegisterSerializer, PostSerializer, UserSerializer, FollowersFollowingSerializer, CommentSerializer
 from rest_framework import status
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from django.core.files.base import ContentFile
+import requests
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
+
+#Google Auth
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
 
         try: 
-            username = request.data['username']
+            username = request.data.get('username')
             password = request.data.get('password')
             try:
                 user = UserProfile.objects.get(username=username)
@@ -89,21 +98,114 @@ class CustomTokenRefreshView(TokenRefreshView):
             )
             return res
         except Exception as e:
-            print(e)
             return Response({"success": False})
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def authenticated(request):
+    print("Authenticated user:",request.user.username)
     return Response({"success": True})
+
+
+def save_profile_picture(user, image_url):
+    response = requests.get(image_url, stream=True)
+    if response.status_code == 200:
+        file_name = f"{user.username}_profile_pic.jpg" 
+        user.profile_image.save(file_name, ContentFile(response.content), save=True)
+
+
+@api_view(['POST'])
+def google_auth(request):
+    try:
+        token = request.data.get("access_token")
+        
+        # Verify token with Google
+        google_data = id_token.verify_oauth2_token(
+            token,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID
+        )
+        
+        email = google_data.get("email")
+        first_name = google_data.get("given_name", "")
+        last_name = google_data.get("family_name", "")
+        profile_image = google_data.get("picture", None)
+
+        if not email:
+            return Response({"error": "Email not provided by Google"}, status=400)
+
+        user, created = UserProfile.objects.get_or_create(email=email, defaults={
+            "first_name": first_name,
+            "last_name": last_name,
+        })
+        if profile_image and created:
+            save_profile_picture(user, profile_image)
+
+        if created or not user.username:
+            return Response({"success": False, "message": "Username required", "set_username": True, "email": email})
+        
+        refresh = RefreshToken.for_user(user)
+        access_token = refresh.access_token
+
+        res = Response({
+            "success": True,
+            "user": {
+                "username": user.username,
+                "email": user.email,
+                "bio": user.bio,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "profile_image": user.profile_image.url
+            }
+        })
+        res.set_cookie("access_token", str(access_token), httponly=True, secure=True, samesite="None", path="/")
+        res.set_cookie("refresh_token", str(refresh), httponly=True, secure=True, samesite="None", path="/")
+
+        return res
+
+    except Exception as e:
+        print(e)
+        return Response({"error": str(e)}, status=400)
+
+
+@api_view(['POST'])
+def set_username(request):
+    email = request.data.get("email")
+    username = request.data.get("username")
+
+    if not email or not username:
+        return Response({"error": "Email and username are required"}, status=400)
+
+    if UserProfile.objects.filter(username=username).exists():
+        return Response({"error": "Username already taken"}, status=400)
+
+    user = UserProfile.objects.get(email=email)
+    user.username = username
+    user.save()
+
+    refresh = RefreshToken.for_user(user)
+    access_token = refresh.access_token
+
+    res = Response({
+        "success": True,
+        "user": {
+            "username": user.username,
+            "email": user.email,
+            "bio": user.bio,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "profile_image": user.profile_image.url if user.profile_image else None,
+        }
+    })
+    res.set_cookie("access_token", str(access_token), httponly=True, secure=True, samesite="None", path="/")
+    res.set_cookie("refresh_token", str(refresh), httponly=True, secure=True, samesite="None", path="/")
+
+    return res
 
 
 @api_view(['POST'])
 def register(request):
-    # if UserProfile.objects.filter(username = request.data['username']).exists():
-    #     return Response({"error": "Username already in use. Please try a different one"})
-    # else:
     serializer = UserRegisterSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -173,7 +275,7 @@ def get_user_posts(request, pk):
 
         for post in serializer.data:
             new_post = {}
-            if my_user.username in post['likes']:
+            if my_user.id in post['likes']:
                 new_post = {**post, 'liked':True}
             else:
                 new_post = {**post, 'liked': False}
@@ -259,7 +361,7 @@ def get_posts(request):  ## for homepage
 
         for post in serializer.data:
             new_post = {}
-            if my_user.username in post['likes']:
+            if my_user.id in post['likes']:
                 new_post = {**post, 'liked':True}
             else:
                 new_post = {**post, 'liked': False}
@@ -300,10 +402,10 @@ def update_user_details(request):
     return Response({**serializer.errors, "success": False})
 
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
-
     try:
         res = Response()
         res.data = {"success": True}
@@ -371,3 +473,35 @@ def post_comment(request):
         return Response({"error": "Error posting comment"})
 
     
+@api_view(["POST"]) 
+def check_username(request):
+    try:
+        username = request.data.get("username")  
+
+        if not username:
+            return Response({"error": "Username is required"}, status=400)
+
+        if UserProfile.objects.filter(username=username).exists():
+            return Response({"available": False, "message": "Username already taken"}, status=200)
+        
+        return Response({"available": True, "message": "Username is available"}, status=200)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+    
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_user_photos(request):  
+    try:
+        username = request.data['username']
+        try:
+            user = UserProfile.objects.get(username = username)
+        except : 
+            return Response({"error": "User does not exist"})
+        images = user.posts.exclude(image="").order_by('-created_at').values_list('image', flat=True)
+        image_urls = [request.build_absolute_uri(f"/media/{img}") for img in images]
+        return Response({"success": True, "images": image_urls}, status=200)
+    except:
+        return Response({"error": "Error fetching photos"})
